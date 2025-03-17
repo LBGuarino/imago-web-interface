@@ -5,7 +5,7 @@ import * as fs from 'fs';
 if (!admin.apps.length) {
   try {
     // Agregar logs para debug
-    const filePath = join(process.cwd(), 'googleApiKeys', 'imago-web-interface-firebase-adminsdk-fbsvc-5242b89450.json');
+    const filePath = join(process.cwd(), 'googleApiKeys', 'googleApiKeys/imago-web-interface-firebase-adminsdk-fbsvc-92d7d02c53.json');
     console.log('Attempting to read file from:', filePath);
     
     if (!fs.existsSync(filePath)) {
