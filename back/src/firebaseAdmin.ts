@@ -3,12 +3,14 @@ import admin from "firebase-admin";
 import dotenv from "dotenv";
 dotenv.config();
 
-if (!admin.apps.length) {
-  const credentialPath = process.env.ADMIN_CREDENTIALS;
-  if (!credentialPath) {
-    throw new Error("La variable FIREBASE_ADMIN_CREDENTIALS no está definida");
-  }
-  const serviceAccount = require(credentialPath);
+if (process.env.FUNCTIONS_EMULATOR) {
+  // En entorno local (emulación), utiliza el archivo de credenciales
+  const serviceAccount = require("../../googleApiKeys/imago-web-interface-firebase-adminsdk-fbsvc-714fed1076.json");
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+} else {
+  const serviceAccount = require("../../googleApiKeys/imago-web-interface-firebase-adminsdk-fbsvc-714fed1076.json");
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
