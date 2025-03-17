@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "imago-web-interface",
+  "private_key_id": "b63faf3c2a9bc615f7dbcce02b7d5f1774e323e7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC6XmnjeCR+eWxI\nRSfDgZQEqW0YF0PzVbPLAOORcG+QDdqPALgd/wcDOGqJLtWHs7S3s48BKxI6Clhk\nRuQTXgtClGvSyGnFngMcWTaspgzijSBdclOctTXW1L5X8Rp4nQPlneFlZztUnoyu\nqBAH2OarStFq5LHarnzWolfSqQO8pPjKZxIssd2jbBRoG7ectxicj3ECnvfTZss8\nx8Ui70ktRHi/eY8QCnABZmhj7vvhVGF1XEinIyXS4maijkdw70Py6cICIkg8Jerq\nQaO153j1tFpex/uNtIk0DfWFGU9QoC+JAcanxbmQ0QRgmta5t6jWv1yKv1H3t7wq\nvzuaS0ZDAgMBAAECggEANg/bQZwBYhrQ+WnuLf1xtaR8PAfLs1PCEvpQCUmHY09R\nfjgkMLdhDmMYLHFEidfsbXmN2zXmVKXZnEUgNioKtCaf3IY8gJHkrx2GCbElfbaY\nk+LtNEEwu//8s0ACgMhzb/FLiAHZKSPRBX1FITGfQEM02oA6w4foOM7hEP/sUJU/\ni9XopNLDzpuSAfZHdwvK0nXQTok6+Zxv+ZhKH8z0Jjm4e7goe5we+CMdEQy4ALDk\nAZZkzePokqQC+AIHzKcwbTwKPcB9ZJn267UKmZ+jyn0QDddC5Yp9U267hdIWteU+\nkvq6TzFD6kVs5nRPVYlHCWVtcyCoOGiRo130hZHHMQKBgQDoPMlCjzMyGixCjvV9\n3Yscyzl+/bPy+XvYQmTMkFx3Rmpkez6jIKk60PdaYMImwxIldZJpYh/VYWtIgnOO\nTA6f/nkF0XZGoaxRtmcjbmo9DwwB57g0Z6Z5NKBLM1HqCSg8q9J5TE86ixa3QzRs\nm1VsR8qWYp+SrFCT7chLgwQP6QKBgQDNcCWfGeoC+oTujONcl5QhcCFgsM2JBWTA\n8DrRyiH5+U1IpJVbFeynF/qIGvxXU+v2Zqmdtrx6OHFffRKo5R3eZ5FDJecem5MK\nvOV4viyfISDiiDn05RqPhVGktc8JfvLYdFJj8M4oXLZ5gAIHeDu+Sw4NNXC59g8a\nZWUJVRiVSwKBgQCU5TQcKnembcVmvwWCNyJTybAJTVusMmxGkPrTdNLz3f+kgKf+\nKpiVjxinp1WTSIo/3guK6VCDnDwOdyTjXLwbtCmfo1XznwA+O3YQ71/J2fXW2tvt\nLW88UpNa44JnTIuxqm/9OQGrBTYBNWNNJqI0FCs9E+o/PZ9D2LYMQ+m80QKBgQC+\nX21NiVsUVYh38vECLajkb59OlahxkCD0tekb3V8s4Twf0/xfwuphUVQlajRqzGb+\nF9aYQu1XqRROc32mK2NJZNn0ypvo/iv9qFxRTpHVCIMLyUdDzEaXtuiYZK4t04lA\n0lJDMLQqLPgfkWLP/zgFuFGWJe6HNSB7yngddNDqDwKBgHsb4SGRbHXDvtbh4oz4\nRBZSbjhzToisNhPZugnwcZtlLVVscTkXbNTEPdQ1Q3eMvgCvQDyK70Wquo7K+cJz\nQpcpjkjmRt6PPg4S0wvbfEmw63Ig46coGpTbnSb0sKQQgTf5RlHchjcJ4RL3CM2q\nq7oSoRRqwKXDS7KMNwi5vLlM\n-----END PRIVATE KEY-----\n",
+  "client_email": "imagoadmin@imago-web-interface.iam.gserviceaccount.com",
+  "client_id": "104687679606528134237",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/imagoadmin%40imago-web-interface.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
