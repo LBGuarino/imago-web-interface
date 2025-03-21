@@ -1,0 +1,74 @@
+proyecto_imago=# select * from mammography_study;
+ id |                    studyInstanceUID                     | patientId |   patientName   |      studyDate      | description | modality
+----+---------------------------------------------------------+-----------+-----------------+---------------------+-------------+----------
+  1 | 1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1 | 18023877  | Romero^Angelica | 2021-09-09 00:00:00 |             | MG
+(1 Zeile)
+
+
+proyecto_imago=# select * from mammography_series;
+ id |                    seriesInstanceUID                    | laterality | viewPosition | seriesDescription | study_id
+----+---------------------------------------------------------+------------+--------------+-------------------+----------
+  1 | 1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3 | R          | RCC          |                   |        1
+  2 | 1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3 | L          | LCC          |                   |        1
+  3 | 1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3 | R          | RMLO         |                   |        1
+  4 | 1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3 | L          | LMLO         |                   |        1
+(4 Zeilen)
+
+
+proyecto_imago=# select * from mammography_image;
+ id |                     sopInstanceUID                      |          imageUrl          |                                                                                                                                                                                          originalMetadata                                                                                                                                                                                          | processedMetadata | series_id
+----+---------------------------------------------------------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-----------
+  1 | 1.3.46.670589.30.32.6.1.198690282273773.1631195136625.2 | ruta_donde_guardes/IM_0001 | {"Modality": "MG", "PatientID": "18023877", "StudyDate": "20210909", "PatientName": "Romero^Angelica", "ViewPosition": "RCC", "SOPInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.2", "ImageLaterality": "R", "StudyInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1", "SeriesInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3"}  |                   |         1
+  2 | 1.3.46.670589.30.32.6.1.198690282273773.1631195136828.2 | ruta_donde_guardes/IM_0002 | {"Modality": "MG", "PatientID": "18023877", "StudyDate": "20210909", "PatientName": "Romero^Angelica", "ViewPosition": "LCC", "SOPInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136828.2", "ImageLaterality": "L", "StudyInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1", "SeriesInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3"}  |                   |         2
+  3 | 1.3.46.670589.30.32.6.1.198690282273773.1631195136984.2 | ruta_donde_guardes/IM_0003 | {"Modality": "MG", "PatientID": "18023877", "StudyDate": "20210909", "PatientName": "Romero^Angelica", "ViewPosition": "RMLO", "SOPInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136984.2", "ImageLaterality": "R", "StudyInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1", "SeriesInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3"} |                   |         3
+  4 | 1.3.46.670589.30.32.6.1.198690282273773.1631195137125.2 | ruta_donde_guardes/IM_0004 | {"Modality": "MG", "PatientID": "18023877", "StudyDate": "20210909", "PatientName": "Romero^Angelica", "ViewPosition": "LMLO", "SOPInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195137125.2", "ImageLaterality": "L", "StudyInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1", "SeriesInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3"} |                   |         4
+(4 Zeilen)
+
+
+{
+  "SOPInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.2",
+  "SeriesInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3",
+  "StudyInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1",
+  "PatientID": "18023877",
+  "PatientName": "Romero^Angelica",
+  "StudyDate": "20210909",
+  "Modality": "MG",
+  "ImageLaterality": "R",
+  "ViewPosition": "RCC"
+}
+
+{
+  "SOPInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136828.2",
+  "SeriesInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3",
+  "StudyInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1",
+  "PatientID": "18023877",
+  "PatientName": "Romero^Angelica",
+  "StudyDate": "20210909",
+  "Modality": "MG",
+  "ImageLaterality": "L",
+  "ViewPosition": "LCC"
+}
+
+{
+  "SOPInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136984.2",
+  "SeriesInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3",
+  "StudyInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1",
+  "PatientID": "18023877",
+  "PatientName": "Romero^Angelica",
+  "StudyDate": "20210909",
+  "Modality": "MG",
+  "ImageLaterality": "R",
+  "ViewPosition": "RMLO"
+}
+
+{
+  "SOPInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195137125.2",
+  "SeriesInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631195136625.3",
+  "StudyInstanceUID": "1.3.46.670589.30.32.6.1.198690282273773.1631194529312.1",
+  "PatientID": "18023877",
+  "PatientName": "Romero^Angelica",
+  "StudyDate": "20210909",
+  "Modality": "MG",
+  "ImageLaterality": "L",
+  "ViewPosition": "LMLO"
+}

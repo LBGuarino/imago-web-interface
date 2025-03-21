@@ -3,6 +3,7 @@
     "skipLibCheck": true,
     "module": "NodeNext",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "moduleResolution": "nodenext",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
@@ -12,7 +13,5 @@
     "target": "es2017"
   },
   "compileOnSave": true,
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

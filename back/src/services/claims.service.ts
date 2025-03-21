@@ -1,5 +1,5 @@
 // services/claimsService.ts
-import admin from "../firebaseAdmin";
+import admin from "../lib/firebaseAdmin";
 
 /**
  * Asigna el claim 'approved' a false a un usuario.

@@ -4,13 +4,63 @@ import {
   setUserApprovedFalse,
 } from "../../src/services/claims.service";
 import sgMail from "@sendgrid/mail";
-import admin from "../../src/firebaseAdmin";
+import admin from "../../src/lib/firebaseAdmin";
+
+// eslint-disable-next-line require-jsdoc
+function generateRandomPassword(length = 12): string {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
 /**
  * Trigger que se dispara al crear un usuario. Establece el custom claim "approved" en false.
  */
 export const onUserCreate = functions.auth.user().onCreate(async (user) => {
   try {
     await setUserApprovedFalse(user.uid);
+
+    const email = user.email;
+    if (!email) return;
+
+    const generatedPassword = generateRandomPassword();
+
+    await admin.auth().updateUser(user.uid, {
+      password: generatedPassword,
+    });
+
+    const verificationLink = await admin
+      .auth()
+      .generateEmailVerificationLink(email, {
+        url: "http://localhost:3000/verification",
+      });
+
+    const passwordResetLink = await admin
+      .auth()
+      .generatePasswordResetLink(email, {
+        url: "http://localhost:3000/login",
+      });
+
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
+
+    const msg = {
+      to: email,
+      from: "guarinolucia@icloud.com", // Debe ser un email verificado en SendGrid
+      templateId: "d-19f0d5230e614192a91c9c1942c29a8d", // ID de plantilla en SendGrid
+      dynamic_template_data: {
+        userEmail: email,
+        verificationLink: verificationLink,
+        generatedPassword: generatedPassword, // Nueva contraseña temporal
+        resetPasswordLink: passwordResetLink,
+      },
+    };
+
+    // Enviar email con SendGrid
+    await sgMail.send(msg);
+    console.log("📩 Email enviado con credenciales a:", email);
   } catch (error) {
     console.error("Error al establecer custom claim en onUserCreate:", error);
   }
@@ -55,45 +105,5 @@ export const approveUser = functions.https.onCall(async (data, context) => {
       "internal",
       "Error al aprobar el usuario."
     );
-  }
-});
-
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
-sgMail.setApiKey(SENDGRID_API_KEY);
-
-exports.sendEmailVerification = functions.auth.user().onCreate(async (user) => {
-  const email = user.email;
-  if (!email) return;
-
-  // Configura los parámetros para el enlace de verificación
-  const actionCodeSettings = {
-    // URL a la que el usuario será redirigido después de verificar
-    url: "http://localhost:3000/verification" + user.uid,
-    handleCodeInApp: false, // Si usas una app, puedes poner true y configurar el deep linking
-  };
-
-  try {
-    // Genera el enlace de verificación usando Firebase Admin SDK
-    const verificationLink = await admin
-      .auth()
-      .generateEmailVerificationLink(email, actionCodeSettings);
-
-    // Configura el mensaje para SendGrid, utilizando la plantilla dinámica
-    const msg = {
-      to: email,
-      from: "guarinolucia@icloud.com", // Debe ser un email verificado en SendGrid
-      templateId: "d-19f0d5230e614192a91c9c1942c29a8d", // El ID de la plantilla que creaste en SendGrid
-      dynamic_template_data: {
-        // La variable definida en tu plantilla para insertar el link
-        verificationLink: verificationLink,
-        // Puedes incluir otras variables dinámicas que uses en la plantilla
-      },
-    };
-
-    // Envía el email
-    await sgMail.send(msg);
-    console.log("Email de verificación enviado a:", email);
-  } catch (error) {
-    console.error("Error al enviar el email de verificación:", error);
   }
 });

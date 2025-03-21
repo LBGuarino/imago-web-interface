@@ -1,3 +1,5 @@
 /googleApiKeys
 /test
 /Documentation
+.env
+.env.local

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import DashboardForm from "@/components/DashboardForm";
-import { refreshAuthToken } from "@/lib/auth";
+import getUserInfo from "@/helpers/userInfo";
+import { refreshAuth } from "@/lib/auth";
 
 interface Study {
   id: number;
@@ -12,42 +13,55 @@ interface Study {
 }
 
 interface UserData {
-  uid: string;
-  email?: string;
-  displayName: string;
-  photoURL: string;
+  firstName?: string;
+  lastName?: string;
+  dni?: string;
+  address?: string;
 }
 
-interface DashboardProps {
-  user: UserData;
-}
-
-export default function MyDashboard({ user }: DashboardProps) {
-  const [activeTab, setActiveTab] = useState<"misEstudios" | "nuevoEstudio" | "configuracion">("misEstudios");
+export default function MyDashboard() {
+  const [activeTab, setActiveTab] = useState<
+    "misEstudios" | "nuevoEstudio" | "configuracion"
+  >("misEstudios");
+  const [user, setUser] = useState<UserData>();
 
   const [studies, setStudies] = useState<Study[]>([
-    { id: 1, name: "Estudio Mamografía 2023-05-01", status: "En Progreso", progress: 60 },
-    { id: 2, name: "Estudio Mamografía 2023-04-20", status: "Completado", progress: 100 },
+    {
+      id: 1,
+      name: "Estudio Mamografía 2023-05-01",
+      status: "En Progreso",
+      progress: 60,
+    },
+    {
+      id: 2,
+      name: "Estudio Mamografía 2023-04-20",
+      status: "Completado",
+      progress: 100,
+    },
   ]);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndFetchUserInfo = async () => {
       try {
-        await refreshAuthToken();
+        await refreshAuth();
+        const userData = await getUserInfo();
+        setUser(userData);
       } catch (error) {
-        window.location.href = '/login';
+        window.location.href = "/login";
       }
     };
 
-    if (typeof window !== 'undefined') {
-      checkAuth();
+    if (typeof window !== "undefined") {
+      checkAuthAndFetchUserInfo();
     }
   }, []);
 
   return (
     <div className="max-w-7xl mx-auto p-10">
       <header className="mb-12 text-center">
-        <h1 className="text-5xl font-light text-gray-800">Bienvenido/a {user?.displayName}</h1>
+        <h1 className="text-5xl font-light text-gray-800">
+          Bienvenido/a Dr./a {user?.firstName} {user?.lastName}
+        </h1>
         <p className="mt-4 text-xl text-gray-600">Panel de Control</p>
       </header>
 
@@ -55,21 +69,33 @@ export default function MyDashboard({ user }: DashboardProps) {
         <button
           onClick={() => setActiveTab("misEstudios")}
           className={`px-6 py-2 rounded-full text-lg font-medium transition-colors 
-            ${activeTab === "misEstudios" ? "bg-blue-600 text-white shadow-md" : "bg-white/80 text-gray-800 hover:bg-blue-100"}`}
+            ${
+              activeTab === "misEstudios"
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-white/80 text-gray-800 hover:bg-blue-100"
+            }`}
         >
           Mis Estudios
         </button>
         <button
           onClick={() => setActiveTab("nuevoEstudio")}
           className={`px-6 py-2 rounded-full text-lg font-medium transition-colors 
-            ${activeTab === "nuevoEstudio" ? "bg-blue-600 text-white shadow-md" : "bg-white/80 text-gray-800 hover:bg-blue-100"}`}
+            ${
+              activeTab === "nuevoEstudio"
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-white/80 text-gray-800 hover:bg-blue-100"
+            }`}
         >
           Nuevo Estudio
         </button>
         <button
           onClick={() => setActiveTab("configuracion")}
           className={`px-6 py-2 rounded-full text-lg font-medium transition-colors 
-            ${activeTab === "configuracion" ? "bg-blue-600 text-white shadow-md" : "bg-white/80 text-gray-800 hover:bg-blue-100"}`}
+            ${
+              activeTab === "configuracion"
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-white/80 text-gray-800 hover:bg-blue-100"
+            }`}
         >
           Configuración
         </button>
@@ -80,25 +106,34 @@ export default function MyDashboard({ user }: DashboardProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {studies.length > 0 ? (
               studies.map((study) => (
-                <div key={study.id} className="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-200">
-                  <h2 className="text-3xl font-semibold mb-4 text-gray-700">{study.name}</h2>
+                <div
+                  key={study.id}
+                  className="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-200"
+                >
+                  <h2 className="text-3xl font-semibold mb-4 text-gray-700">
+                    {study.name}
+                  </h2>
                   <div className="flex items-center mb-4">
                     <div className="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
-                    <span className="text-xl text-gray-700">{study.status}</span>
+                    <span className="text-xl text-gray-700">
+                      {study.status}
+                    </span>
                   </div>
                   <div className="mt-6">
-                  <button
-                    disabled
-                    className="w-full py-3 bg-green-600 text-white font-bold rounded-xl transition-colors opacity-50 cursor-not-allowed"
-                    >                      
-                    Descargar Imágenes Procesadas
+                    <button
+                      disabled
+                      className="w-full py-3 bg-green-600 text-white font-bold rounded-xl transition-colors opacity-50 cursor-not-allowed"
+                    >
+                      Descargar Imágenes Procesadas
                     </button>
                   </div>
                 </div>
               ))
             ) : (
               <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-200 text-center">
-                <p className="text-gray-600 text-lg">No hay estudios guardados</p>
+                <p className="text-gray-600 text-lg">
+                  No hay estudios guardados
+                </p>
               </div>
             )}
           </div>
@@ -106,8 +141,12 @@ export default function MyDashboard({ user }: DashboardProps) {
         {activeTab === "nuevoEstudio" && <DashboardForm />}
         {activeTab === "configuracion" && (
           <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-200">
-            <h2 className="text-3xl font-semibold mb-4 text-gray-700">Configuración</h2>
-            <p className="text-gray-600">Ajustes de la cuenta y estado del sistema.</p>
+            <h2 className="text-3xl font-semibold mb-4 text-gray-700">
+              Configuración
+            </h2>
+            <p className="text-gray-600">
+              Ajustes de la cuenta y estado del sistema.
+            </p>
           </div>
         )}
       </section>

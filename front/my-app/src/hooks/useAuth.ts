@@ -3,11 +3,11 @@ import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import firebase from "@/lib/firebase";
 import getUserInfo from "@/helpers/userInfo";
 
-interface UserData {
-  uid?: string;
-  email?: string;
-  displayName?: string;
-  photoURL?: string;
+interface UserData extends User {
+  firstName?: string;
+  lastName?: string;
+  dni?: string;
+  address?: string;
 }
 
 export function useAuth() {
@@ -17,28 +17,32 @@ export function useAuth() {
 
   useEffect(() => {
     const auth = getAuth(firebase);
-    const unsubscribe = onAuthStateChanged(auth, async (user: User | null) => {
-      if (user) {
-        setLoggedUser({
-          uid: user.uid,
-          email: user.email || undefined,
-          displayName: user.displayName || undefined,
-          photoURL: user.photoURL || undefined,
-        });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (user: UserData | null) => {
+        if (user) {
+          setLoggedUser({
+            ...user,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            dni: user.dni,
+            address: user.address,
+          });
 
-        try {
-          const data = await getUserInfo();
-          setBackendUserData(data);
-        } catch (error) {
-          console.error("Error al obtener datos del backend:", error);
+          try {
+            const data = await getUserInfo();
+            setBackendUserData(data);
+          } catch (error) {
+            console.error("Error al obtener datos del backend:", error);
+            setBackendUserData(null);
+          }
+        } else {
+          setLoggedUser(null);
           setBackendUserData(null);
         }
-      } else {
-        setLoggedUser(null);
-        setBackendUserData(null);
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    );
 
     return unsubscribe;
   }, []);

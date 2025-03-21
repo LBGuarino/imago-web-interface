@@ -18,6 +18,12 @@ export const AppDataSource = new DataSource({
   synchronize: !isProduction,
   // dropSchema: true,
   logging: isProduction,
-  entities: [User, MammographyStudy, MammographySeries, MammographyImage, Healthcenter],
-  migrations: []
+  entities: [
+    User,
+    MammographyStudy,
+    MammographySeries,
+    MammographyImage,
+    Healthcenter,
+  ],
+  migrations: [],
 });

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "Imago ICE Reveal Platform",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

@@ -1,11 +1,11 @@
 // components/AdminDashboard.tsx
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { getAuth } from 'firebase/auth';
-import firebase from '@/lib/firebase';
-import { useRouter } from 'next/navigation';
-import { refreshAuthToken } from '@/lib/auth';
+import { useEffect, useState } from "react";
+import { getAuth } from "firebase/auth";
+import firebase from "@/lib/firebase";
+import Link from "next/link";
+import { refreshAuth } from "@/lib/auth";
 
 interface UserData {
   uid: string;
@@ -20,7 +20,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 interface ModalData {
   show: boolean;
-  action: 'assignAdmin' | 'approveUser' | 'deleteUser' | null;
+  action: "assignAdmin" | "approveUser" | "deleteUser" | null;
   uid: string | null;
   title: string;
   message: string;
@@ -34,7 +34,13 @@ interface ConfirmationModalProps {
   onCancel: () => void;
 }
 
-function ConfirmationModal({ show, title, message, onConfirm, onCancel }: ConfirmationModalProps) {
+function ConfirmationModal({
+  show,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+}: ConfirmationModalProps) {
   if (!show) return null;
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
@@ -68,49 +74,33 @@ export default function AdminDashboard() {
     show: false,
     action: null,
     uid: null,
-    title: '',
-    message: '',
+    title: "",
+    message: "",
   });
-  const router = useRouter();
 
   useEffect(() => {
-    checkAdminStatus();
     fetchUsers();
   }, []);
-
-  const checkAdminStatus = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/verify_admin`, {
-        credentials: 'include',
-        method: 'GET',
-      });
-      return response;
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      }
-      router.push('/');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchUsers = async () => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/users`, {
-        method: 'GET',
-        credentials: 'include'
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
       if (response.status === 401) {
-        await refreshAuthToken();
+        await refreshAuth();
         return fetchUsers();
       }
 
       const data = await response.json();
       setUsers(data.users);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch users');
+      setError(err instanceof Error ? err.message : "Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -120,30 +110,30 @@ export default function AdminDashboard() {
   const handleAssignAdmin = (uid: string) => {
     setModalData({
       show: true,
-      action: 'assignAdmin',
+      action: "assignAdmin",
       uid,
-      title: 'Confirmar Asignación de Admin',
-      message: '¿Está seguro de que desea asignar rol de admin a este usuario?',
+      title: "Confirmar Asignación de Admin",
+      message: "¿Está seguro de que desea asignar rol de admin a este usuario?",
     });
   };
 
   const handleApproveUser = (uid: string) => {
     setModalData({
       show: true,
-      action: 'approveUser',
+      action: "approveUser",
       uid,
-      title: 'Confirmar Aprobación de Usuario',
-      message: '¿Está seguro de que desea aprobar a este usuario?',
+      title: "Confirmar Aprobación de Usuario",
+      message: "¿Está seguro de que desea aprobar a este usuario?",
     });
   };
 
   const handleDeleteUser = (uid: string) => {
     setModalData({
       show: true,
-      action: 'deleteUser',
+      action: "deleteUser",
       uid,
-      title: 'Confirmar Eliminación de Usuario',
-      message: '¿Está seguro de que desea eliminar a este usuario?',
+      title: "Confirmar Eliminación de Usuario",
+      message: "¿Está seguro de que desea eliminar a este usuario?",
     });
   };
 
@@ -151,13 +141,13 @@ export default function AdminDashboard() {
   const confirmModalAction = async () => {
     if (!modalData.uid || !modalData.action) return;
     switch (modalData.action) {
-      case 'assignAdmin':
+      case "assignAdmin":
         await assignAdminRole(modalData.uid);
         break;
-      case 'approveUser':
+      case "approveUser":
         await approveUser(modalData.uid);
         break;
-      case 'deleteUser':
+      case "deleteUser":
         await deleteUser(modalData.uid);
         break;
       default:
@@ -170,99 +160,136 @@ export default function AdminDashboard() {
   const assignAdminRole = async (uid: string) => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/assignAdmin`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ uid }),
       });
 
       if (response.status === 401) {
-        await refreshAuthToken();
+        await refreshAuth();
         return assignAdminRole(uid);
       }
 
       await fetchUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error asignando rol admin');
+      setError(
+        err instanceof Error ? err.message : "Error asignando rol admin"
+      );
     }
   };
 
   const approveUser = async (uid: string) => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/approveUser`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ uid }),
       });
 
       if (response.status === 401) {
-        await refreshAuthToken();
+        await refreshAuth();
         return approveUser(uid);
       }
 
       await fetchUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error aprobando usuario');
+      setError(err instanceof Error ? err.message : "Error aprobando usuario");
     }
   };
 
   const deleteUser = async (uid: string) => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/deleteUser`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ uid }),
       });
 
       if (response.status === 401) {
-        await refreshAuthToken();
+        await refreshAuth();
         return deleteUser(uid);
       }
 
       await fetchUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error eliminando usuario');
+      setError(err instanceof Error ? err.message : "Error eliminando usuario");
     }
   };
 
   const currentUser = getAuth(firebase).currentUser?.uid;
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex justify-center items-center">
+        <div className="bg-white shadow-2xl rounded-xl p-8 border border-gray-200 animate-pulse">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-opacity-60"></div>
+            <p className="text-gray-700 font-semibold text-lg">
+              Cargando, por favor espere...
+            </p>
+            <p className="text-sm text-gray-500">
+              Esto puede tomar algunos segundos.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
     <div className="max-w-screen-xl mx-auto p-4">
-      <h1 className="text-2xl md:text-3xl font-light mb-6 text-blue-900 text-center">Dashboard de Administrador</h1>
+      <h1 className="text-2xl md:text-3xl font-light mb-6 text-blue-900 text-center">
+        Dashboard de Administrador
+      </h1>
       {error && (
         <div className="bg-red-100 text-red-700 p-2 rounded mb-4 text-center">
           {error}
         </div>
       )}
-      
+
       <div className="overflow-x-auto shadow rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-blue-100">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-blue-900">Email</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-blue-900">UID</th>
-              <th className="px-4 py-3 text-center text-sm font-medium text-blue-900">Admin</th>
-              <th className="px-4 py-3 text-center text-sm font-medium text-blue-900">Approved</th>
-              <th className="px-4 py-3 text-center text-sm font-medium text-blue-900">Actions</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-blue-900">
+                Email
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-blue-900">
+                UID
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-blue-900">
+                Admin
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-blue-900">
+                Approved
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-blue-900">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {users.map((user) => (
               <tr key={user.uid} className="hover:bg-gray-50">
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{user.email || 'N/A'}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{user.uid}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">{user.claims.admin ? 'Yes' : 'No'}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">{user.claims.approved ? 'Yes' : 'No'}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                  {user.email || "N/A"}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                  {user.uid}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">
+                  {user.claims.admin ? "Yes" : "No"}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-center text-gray-700">
+                  {user.claims.approved ? "Yes" : "No"}
+                </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-center space-x-2">
                   {!user.claims.admin && (
                     <button
@@ -293,6 +320,13 @@ export default function AdminDashboard() {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="flex justify-center mt-10 mb-5">
+        <Link href="/signup">
+          <button className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition-colors duration-200">
+            Registrar nuevo usuario
+          </button>
+        </Link>
       </div>
       <ConfirmationModal
         show={modalData.show}

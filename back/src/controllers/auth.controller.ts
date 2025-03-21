@@ -1,66 +1,125 @@
 import { NextFunction, Request, Response } from "express";
-import admin from "../firebaseAdmin";
+import admin from "../lib/firebaseAdmin";
+import getLocalUserService from "../services/user.service";
 
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 1000;
 
-export default async function sessionLoginController(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> {
-    try {
-        const { idToken } = req.body;
-        if (!idToken) {
-        res.status(400).json({ error: "Falta el token de autenticación" });
-        return;
-        }
-
-        const sessionCookie = await admin.auth().createSessionCookie(idToken,
-            { expiresIn: SESSION_COOKIE_MAX_AGE });
-        res.cookie("__session", sessionCookie, {
-            maxAge: SESSION_COOKIE_MAX_AGE,
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-            path: "/",
-        });
-
-        res.status(200).json({ success: true });
-        return;
-    } catch (error) {
-        console.error("Error al autenticar el usuario:", error);
-        res.status(500).json({
-            error: "Error al autenticar el usuario",
-        });
-        return;
-    }
+function getCookieOptions() {
+  const options: any = {
+    maxAge: SESSION_COOKIE_MAX_AGE,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    path: "/",
+  };
+  if (process.env.NODE_ENV === "production" && process.env.COOKIE_DOMAIN) {
+    options.domain = process.env.COOKIE_DOMAIN;
+  }
+  return options;
 }
 
-export async function refreshSessionController(
-    req: Request,
-    res: Response,
-    next: NextFunction
+export default async function sessionLoginController(
+  req: Request,
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
-    try {
-        const { idToken } = req.body;
-        if (!idToken) {
-            res.status(400).json({ error: "Falta el token de autenticación" });
-            return;
-        }
-
-        const sessionCookie = await admin.auth().createSessionCookie(idToken,
-            { expiresIn: SESSION_COOKIE_MAX_AGE });
-            res.cookie("__session", sessionCookie, {
-                maxAge: SESSION_COOKIE_MAX_AGE,
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-                path: "/",
-            });
-        
-            res.status(200).json({ success: true });
-    } catch (error) {
-        console.error("Error de autenticación:", error);
-        res.status(401).json({ error: "Sesión inválida" });
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      res.status(400).json({ error: "Falta el token de autenticación" });
+      return;
     }
+
+    const sessionCookie = await admin
+      .auth()
+      .createSessionCookie(idToken, { expiresIn: SESSION_COOKIE_MAX_AGE });
+
+    res
+      .cookie("__session", sessionCookie, getCookieOptions())
+      .status(200)
+      .json({ success: true });
+  } catch (error) {
+    console.error("Error al autenticar el usuario:", error);
+    res.status(500).json({ error: "Error al autenticar el usuario" });
+  }
+}
+export async function refreshSessionController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      res.status(400).json({ error: "Falta el token de autenticación" });
+      return;
+    }
+    const sessionCookie = await admin
+      .auth()
+      .createSessionCookie(idToken, { expiresIn: SESSION_COOKIE_MAX_AGE });
+
+    res.cookie("__session", sessionCookie, getCookieOptions());
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error de autenticación:", error);
+    res.status(401).json({ error: "Sesión inválida" });
+  }
+}
+
+export async function getLocalUserController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      res.status(400).json({ error: "Falta el token de autenticación" });
+      return;
+    }
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    const user = decodedToken.uid;
+    if (!user) {
+      res.status(401).json({ error: "No se ha autenticado" });
+      return;
+    }
+    const userData = await getLocalUserService(user);
+    res.status(200).json(userData);
+  } catch (error) {
+    console.error("Error obteniendo datos del usuario:", error);
+    res.status(500).json({ error: "Error obteniendo datos del usuario" });
+  }
+}
+
+export async function checkAttributesController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    // Lee la cookie de sesión directamente
+    const sessionCookie = req.cookies["__session"];
+    if (!sessionCookie) {
+      res.status(401).json({ error: "No se proporcionó cookie de sesión." });
+      return;
+    }
+
+    // Verifica la cookie con Firebase Admin
+    const decodedToken = await admin
+      .auth()
+      .verifySessionCookie(sessionCookie, true);
+
+    if (decodedToken.approved === true) {
+      // Responde directamente con éxito, ya que este es el endpoint final
+      res.status(200).json({ approved: true, user: decodedToken });
+      return;
+    } else {
+      res
+        .status(403)
+        .json({ error: "No tienes permisos para realizar esta acción." });
+      return;
+    }
+  } catch (error: any) {
+    res.status(401).json({ error: "Cookie de sesión inválida." });
+  }
 }
