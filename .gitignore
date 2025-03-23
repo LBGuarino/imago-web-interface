@@ -3,3 +3,6 @@
 /Documentation
 .env
 .env.local
+# .gitignore
+front/my-app/googleApiKeys/
+back/functions/package.json

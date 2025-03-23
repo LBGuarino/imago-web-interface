@@ -1,0 +1,10 @@
+{
+  "customTagConfig": {
+    "tags": [
+      {
+        "path": "00111010",
+        "action": "KEEP"
+      }
+    ]
+  }
+}

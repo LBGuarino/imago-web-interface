@@ -39,20 +39,20 @@ export default function DashboardForm() {
     e.preventDefault();
     setIsLoading(true);
 
-    // const formData = new FormData();
-    // Object.keys(files).forEach((fieldName) => {
-    //   formData.append(fieldName, files[fieldName]);
-    // });
+    const formData = new FormData();
+    Object.keys(files).forEach((fieldName) => {
+      formData.append(fieldName, files[fieldName]);
+    });
 
-    // formData.append("projectId", projectId || "");
-    // formData.append("location", location || "");
-    // formData.append("datasetId", datasetId || "");
-    // formData.append("dicomStoreId", dicomStoreId || "");
+    formData.append("projectId", projectId || "");
+    formData.append("location", location || "");
+    formData.append("datasetId", datasetId || "");
+    formData.append("dicomStoreId", dicomStoreId || "");
 
     try {
-      const response = await fetch("http://localhost:3001/api/test", {
+      const response = await fetch("http://localhost:3001/api/upload", {
         method: "POST",
-        body: "test",
+        body: formData,
         credentials: "include",
       });
 
@@ -72,12 +72,12 @@ export default function DashboardForm() {
     }
   };
 
-  const isFormValid = true;
-  // studyName.trim() !== "" &&
-  // files["view1"] &&
-  // files["view2"] &&
-  // files["view3"] &&
-  // files["view4"];
+  const isFormValid =
+    studyName.trim() !== "" &&
+    files["view1"] &&
+    files["view2"] &&
+    files["view3"] &&
+    files["view4"];
 
   return (
     <>

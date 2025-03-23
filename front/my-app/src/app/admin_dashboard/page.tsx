@@ -8,7 +8,7 @@ export default async function AdminDashboardPage() {
 
   if (!sessionCookie) redirect("/login");
 
-  const response = await fetch("http://localhost:3001/api/verify_admin", {
+  const response = await fetch("http://localhost:3001/api/verify-admin", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -16,8 +16,13 @@ export default async function AdminDashboardPage() {
       Cookie: `__session=${sessionCookie}`,
     },
   });
+
+  if (!response.ok) {
+    redirect("/unauthorized");
+  }
+
   const decodedToken = await response.json();
-  if (!decodedToken.user || !decodedToken.user.admin) {
+  if (!decodedToken || !decodedToken.admin) {
     redirect("/unauthorized");
   }
 

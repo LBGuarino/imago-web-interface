@@ -7,5 +7,6 @@
   "StudyDate": "20210909",
   "Modality": "MG",
   "ImageLaterality": "R",
-  "ViewPosition": "RMLO"
+  "ViewPosition": "RMLO",
+  "DoctorUID": "Y9hbc0rIatbWYdFB0KalggMOSqj1"
 }

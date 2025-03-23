@@ -48,14 +48,17 @@ export default function SignUpForm() {
         healthcenter: healthcenter,
       };
 
-      const registerRes = await fetch("http://localhost:3001/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(registerData),
-        credentials: "include",
-      });
+      const registerRes = await fetch(
+        "http://localhost:3001/api/users/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(registerData),
+          credentials: "include",
+        }
+      );
       if (!registerRes.ok) {
         const errData = await registerRes.json();
         setError(errData.error || "Error al crear la sesión");

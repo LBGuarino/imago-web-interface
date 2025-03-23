@@ -7,7 +7,7 @@ export default async function SignUpPage() {
   const sessionCookie = cookieStore.get("__session")?.value;
 
   if (!sessionCookie) redirect("/login");
-  const response = await fetch("http://localhost:3001/api/verify_admin", {
+  const response = await fetch("http://localhost:3001/api/verify-admin", {
     headers: {
       "Content-Type": "application/json",
       Cookie: `__session=${sessionCookie}`,
@@ -16,7 +16,7 @@ export default async function SignUpPage() {
     credentials: "include",
   });
   const decodedToken = await response.json();
-  if (!decodedToken.user || !decodedToken.user.admin) {
+  if (!decodedToken || !decodedToken.admin) {
     redirect("/unauthorized");
   }
   try {

@@ -159,7 +159,7 @@ export default function AdminDashboard() {
   // Funciones para llamar a los endpoints del backend
   const assignAdminRole = async (uid: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/assignAdmin`, {
+      const response = await fetch(`${BACKEND_URL}/api/assign-admin`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
 
   const approveUser = async (uid: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/approveUser`, {
+      const response = await fetch(`${BACKEND_URL}/api/users/approve`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -205,8 +205,8 @@ export default function AdminDashboard() {
 
   const deleteUser = async (uid: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/deleteUser`, {
-        method: "POST",
+      const response = await fetch(`${BACKEND_URL}/api/users/${uid}`, {
+        method: "DELETE",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",

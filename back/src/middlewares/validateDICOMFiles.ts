@@ -1,10 +1,9 @@
 // src/middlewares/validateDICOMFiles.ts
 import { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
-import { MulterRequest } from "../controllers/upload_dicom.controller";
 
 export const validateDICOMFiles = async (
-  req: MulterRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {

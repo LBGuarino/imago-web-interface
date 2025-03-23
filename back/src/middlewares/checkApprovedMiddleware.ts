@@ -8,7 +8,7 @@ export async function checkApprovedMiddleware(
 ): Promise<void> {
   try {
     // Extraer la cookie __session
-    const sessionCookie = req.cookies["__session"];
+    const sessionCookie = req.cookies?.__session;
     if (!sessionCookie) {
       res.status(401).json({ error: "No se proporcionó cookie de sesión." });
       return;
@@ -27,7 +27,7 @@ export async function checkApprovedMiddleware(
       return;
     }
 
-    // Guardar el token decodificado en req.user para uso posterior (opcional)
+    // Guardar el token decodificado en req.user para uso posterior
     (req as any).user = decodedToken;
 
     next();
@@ -36,5 +36,6 @@ export async function checkApprovedMiddleware(
     res
       .status(401)
       .json({ error: "Cookie de sesión inválida o error en la verificación." });
+    return;
   }
 }

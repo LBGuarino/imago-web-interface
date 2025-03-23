@@ -29,5 +29,6 @@ export async function checkAdminMiddleware(
     }
   } catch (error: any) {
     res.status(401).json({ error: "Cookie de sesión inválida." });
+    return;
   }
 }

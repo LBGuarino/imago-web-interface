@@ -21,20 +21,22 @@ export function useAuth() {
       auth,
       async (user: UserData | null) => {
         if (user) {
-          setLoggedUser({
-            ...user,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            dni: user.dni,
-            address: user.address,
-          });
-
           try {
             const data = await getUserInfo();
+            setLoggedUser({
+              ...user,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              dni: data.dni,
+              address: data.address,
+            });
             setBackendUserData(data);
           } catch (error) {
             console.error("Error al obtener datos del backend:", error);
+            setLoggedUser(null);
             setBackendUserData(null);
+            // Redirigir al login si hay error
+            window.location.href = "/login";
           }
         } else {
           setLoggedUser(null);

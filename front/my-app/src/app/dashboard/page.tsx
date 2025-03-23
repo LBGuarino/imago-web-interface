@@ -7,8 +7,8 @@ export default async function DashboardPage() {
   const sessionCookie = cookieStore.get("__session")?.value;
 
   if (!sessionCookie) redirect("/login");
-  const response = await fetch("http://localhost:3001/api/check_attributes", {
-    method: "POST",
+  const response = await fetch("http://localhost:3001/api/check-attributes", {
+    method: "GET",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",

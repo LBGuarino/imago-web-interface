@@ -21,7 +21,7 @@ export default async function getUserInfo(): Promise<UserData> {
 
   const token = await user.getIdToken();
 
-  const response = await fetch(`${BACKEND_URL}/api/local_userdata`, {
+  const response = await fetch(`${BACKEND_URL}/api/local-user`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -29,6 +29,11 @@ export default async function getUserInfo(): Promise<UserData> {
     credentials: "include",
     body: JSON.stringify({ token }),
   });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Error al obtener datos del usuario");
+  }
 
   const userData: UserData = await response.json();
   if (!userData.firstName) {

@@ -22,6 +22,7 @@ export async function verifyAdminController(
       return;
     }
 
+    res.status(200).json(decodedToken);
     req.user = decodedToken;
     next();
   } catch (error) {

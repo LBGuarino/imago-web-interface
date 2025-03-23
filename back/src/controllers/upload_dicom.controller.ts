@@ -7,11 +7,27 @@ import {
 import axios, { AxiosError } from "axios";
 import FormData from "form-data";
 import { validateDICOMFiles } from "../middlewares/validateDICOMFiles";
+import admin from "../lib/firebaseAdmin";
 
 export interface MulterRequest extends Request {
   files?:
     | Express.Multer.File[]
     | { [fieldName: string]: Express.Multer.File[] };
+}
+
+// Función auxiliar para construir la URL del servicio Python
+export function buildPythonUrl(
+  baseUrl: string,
+  doctorUid: string,
+  additionalParams: Record<string, string> = {}
+) {
+  let queryParams = `doctor_uid=${encodeURIComponent(doctorUid)}`;
+  for (const key in additionalParams) {
+    queryParams += `&${encodeURIComponent(key)}=${encodeURIComponent(
+      additionalParams[key]
+    )}`;
+  }
+  return `${baseUrl}?${queryParams}`;
 }
 
 export default async function uploadDicomController(
@@ -20,13 +36,16 @@ export default async function uploadDicomController(
   next: NextFunction
 ): Promise<void> {
   try {
-    // Validación de archivos
     if (!req.files || Array.isArray(req.files)) {
       res.status(400).json({ error: "No files uploaded" });
       return;
     }
 
-    await validateDICOMFiles(req, res, next);
+    // await validateDICOMFiles(req, res, next);
+    // console.log("Headers sent:", res.headersSent);
+    // if (res.headersSent) {
+    //   return;
+    // }
 
     const files = req.files;
     const { projectId, location, datasetId, dicomStoreId } = req.body;
@@ -34,6 +53,16 @@ export default async function uploadDicomController(
       res.status(400).json({ error: "Missing required parameters" });
       return;
     }
+
+    const sessionCookie = req.cookies["__session"];
+    if (!sessionCookie) {
+      res.status(401).json({ error: "No se proporcionó cookie de sesión." });
+      return;
+    }
+    const decodedToken = await admin
+      .auth()
+      .verifySessionCookie(sessionCookie, true);
+    const doctorUid = decodedToken.uid;
 
     const results: Record<string, any> = {};
     const requiredViewFields = ["view1", "view2", "view3", "view4"];
@@ -53,31 +82,39 @@ export default async function uploadDicomController(
         return;
       }
 
-      // 👇🏻 Llamada al servicio Python para extraer metadata DICOM 👇🏻
+      // Llamada al servicio Python para extraer metadata DICOM
       const formData = new FormData();
       formData.append("dicom_file", file.buffer, {
         filename: file.originalname,
       });
+      // Construir la URL incluyendo el doctor_uid
+      const pythonUrlWithUid = buildPythonUrl(PYTHON_METADATA_URL, doctorUid);
+      console.log("Llamando a Python con URL:", pythonUrlWithUid);
 
       const dicomMetadataResponse = await axios.post(
-        "http://localhost:5001/extract-metadata",
+        pythonUrlWithUid,
         formData,
         {
           headers: formData.getHeaders(),
         }
       );
 
-      const dicomMetadata = dicomMetadataResponse.data;
+      const { metadata: dicomMetadata, dicom_file: modifiedDicomHex } =
+        dicomMetadataResponse.data;
       await saveMetadataToDB(dicomMetadata, file);
-      await dicomTxtLog(file);
+      // Aquí se pasa el doctorUid a dicomTxtLog
+      await dicomTxtLog(file, doctorUid);
 
-      // Continúa tu flujo original: Subir archivo al Healthcare API.
+      // Convert hex string back to Buffer
+      const modifiedDicomBuffer = Buffer.from(modifiedDicomHex, "hex");
+
+      // Continúa el flujo: Subir archivo al Healthcare API.
       results[view] = await uploadDicomToHealthcare(
         projectId,
         location,
         datasetId,
         dicomStoreId,
-        file.buffer
+        modifiedDicomBuffer
       );
     }
 
@@ -89,29 +126,34 @@ export default async function uploadDicomController(
       formDataTomo.append("dicom_file", tomoFile.buffer, {
         filename: tomoFile.originalname,
       });
+      // Construir la URL para tomografía, incluyendo el doctor_uid
+      const pythonUrlWithUid = buildPythonUrl(PYTHON_METADATA_URL, doctorUid);
+      console.log("Llamando a Python (tomo) con URL:", pythonUrlWithUid);
 
       const dicomMetadataTomoResp = await axios.post(
-        PYTHON_METADATA_URL,
+        pythonUrlWithUid,
         formDataTomo,
         {
           headers: formDataTomo.getHeaders(),
         }
       );
 
-      const dicomMetadataTomo = dicomMetadataTomoResp.data;
+      const { metadata: dicomMetadataTomo, dicom_file: modifiedDicomTomoHex } =
+        dicomMetadataTomoResp.data;
       await saveMetadataToDB(dicomMetadataTomo, tomoFile);
+
+      // Convert hex string back to Buffer
+      const modifiedDicomTomoBuffer = Buffer.from(modifiedDicomTomoHex, "hex");
 
       results["tomo"] = await uploadDicomToHealthcare(
         projectId,
         location,
         datasetId,
         dicomStoreId,
-        tomoFile.buffer
+        modifiedDicomTomoBuffer
       );
     }
 
-    // Llamada a desidentificación (tu código original intacto)
-    const sessionCookie = req.cookies["__session"];
     const deidentifyResponse = await axios.post(
       DICOM_DEIDENTIFICATION_URL,
       {
@@ -132,13 +174,11 @@ export default async function uploadDicomController(
       }
     );
 
-    // Respuesta unificada original intacta
     res.status(200).json({
       uploadResults: results,
       deidentificationStatus: deidentifyResponse.data,
     });
   } catch (error) {
-    // Manejo de errores centralizado (original intacto)
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError;
       console.error(
@@ -149,18 +189,22 @@ export default async function uploadDicomController(
         error: "Error en servicio externo (desidentificación o Python)",
         details: axiosError.response?.data || axiosError.message,
       });
+      return;
     } else if (error instanceof Error) {
       console.error("Error general:", error);
       res.status(500).json({
         error: "Error en el proceso completo",
         details: error.message,
       });
+      return;
     } else {
       console.error("Error desconocido:", error);
       res.status(500).json({
         error: "Error desconocido",
         details: "Ocurrió un error inesperado",
       });
+      return;
     }
   }
+  return;
 }

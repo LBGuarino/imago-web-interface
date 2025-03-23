@@ -7,5 +7,6 @@
   "StudyDate": "20210909",
   "Modality": "MG",
   "ImageLaterality": "L",
-  "ViewPosition": "LCC"
+  "ViewPosition": "LCC",
+  "DoctorUID": "Y9hbc0rIatbWYdFB0KalggMOSqj1"
 }

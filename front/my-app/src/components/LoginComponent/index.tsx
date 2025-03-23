@@ -46,17 +46,14 @@ export default function LoginComponent() {
         const idToken = await user.getIdToken();
 
         // Llama al endpoint de sesión pasando el token CSRF recibido
-        const sessionResponse = await fetch(
-          "http://localhost:3001/api/sessionLogin",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ idToken }),
-          }
-        );
+        const sessionResponse = await fetch("http://localhost:3001/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ idToken }),
+        });
 
         if (!sessionResponse.ok) {
           setError(sessionResponse.statusText || "Error al crear la sesión");

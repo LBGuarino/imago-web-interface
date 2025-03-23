@@ -8,6 +8,7 @@ import { MammographySeriesRepository } from "../repositories/mammoseries.reposit
 import { MammographyImageRepository } from "../repositories/mammoimage.repository";
 import { Buffer } from "buffer";
 import path from "path";
+import { buildPythonUrl } from "../controllers/upload_dicom.controller";
 
 const healthcare: healthcare_v1.Healthcare = google.healthcare("v1");
 
@@ -23,7 +24,6 @@ export async function authenticate(): Promise<OAuth2Client> {
     keyFile: process.env.KEYFILE_PATH,
     scopes: ["https://www.googleapis.com/auth/cloud-platform"],
   });
-  console.log("clave", process.env.KEYFILE_PATH);
   return auth.getClient() as Promise<OAuth2Client>;
 }
 
@@ -115,7 +115,7 @@ export async function saveMetadataToDB(
   await MammographyImageRepository.save(mammographyImage);
 }
 
-export async function dicomTxtLog(file: MulterFile) {
+export async function dicomTxtLog(file: MulterFile, doctorUid: string) {
   try {
     const formData = new FormData();
 
@@ -125,16 +125,18 @@ export async function dicomTxtLog(file: MulterFile) {
     // Adjuntar el Blob al FormData
     formData.append("dicom_file", blob, file.originalname);
 
-    const response = await axios.post(
-      "http://localhost:5001/extract-metadata?format=txt",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        responseType: "stream",
-      }
+    const pythonUrlWithUid = buildPythonUrl(
+      "http://localhost:5001/extract-metadata",
+      doctorUid,
+      { format: "txt" }
     );
+
+    const response = await axios.post(pythonUrlWithUid, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      responseType: "stream",
+    });
 
     const outputDir = path.resolve(__dirname, "../../../metadata_files");
     if (!fs.existsSync(outputDir)) {

@@ -66,6 +66,37 @@ export async function refreshSessionController(
   }
 }
 
+export async function getUserController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const sessionCookie = req.cookies["__session"];
+    if (!sessionCookie) {
+      res.status(401).json({ error: "No autenticado" });
+      return;
+    }
+
+    const decodedToken = await admin
+      .auth()
+      .verifySessionCookie(sessionCookie, true); // Usar verifySessionCookie en lugar de verifyIdToken
+
+    const user = await admin.auth().getUser(decodedToken.uid);
+    res.status(200).json({
+      email: user.email,
+      admin: decodedToken.admin || false,
+      approved: decodedToken.approved || false,
+      email_verified: user.emailVerified,
+      uid: user.uid
+    });
+
+  } catch (error) {
+    console.error("Error obteniendo datos del usuario:", error);
+    res.status(401).json({ error: "Sesión inválida" });
+  }
+}
+
 export async function getLocalUserController(
   req: Request,
   res: Response,
@@ -77,20 +108,15 @@ export async function getLocalUserController(
       res.status(400).json({ error: "Falta el token de autenticación" });
       return;
     }
+
     const decodedToken = await admin.auth().verifyIdToken(token);
-    const user = decodedToken.uid;
-    if (!user) {
-      res.status(401).json({ error: "No se ha autenticado" });
-      return;
-    }
-    const userData = await getLocalUserService(user);
-    res.status(200).json(userData);
+    const user = await getLocalUserService(decodedToken.uid);
+    res.status(200).json(user);
   } catch (error) {
     console.error("Error obteniendo datos del usuario:", error);
-    res.status(500).json({ error: "Error obteniendo datos del usuario" });
+    res.status(401).json({ error: "Sesión inválida" });
   }
 }
-
 export async function checkAttributesController(
   req: Request,
   res: Response,
