@@ -24,28 +24,34 @@ export async function logoutController(
     const sessionCookie = req.cookies["__session"];
 
     if (sessionCookie) {
-      // 1. Verificar y revocar los tokens de refresco
-      const decodedToken = await admin
-        .auth()
-        .verifySessionCookie(sessionCookie);
-      await admin.auth().revokeRefreshTokens(decodedToken.sub);
-      console.log(`Tokens revocados para usuario: ${decodedToken.sub}`);
+      try {
+        // 1. Verificar y revocar los tokens de refresco
+        const decodedToken = await admin
+          .auth()
+          .verifySessionCookie(sessionCookie);
+        await admin.auth().revokeRefreshTokens(decodedToken.sub);
+        console.log(`Tokens revocados para usuario: ${decodedToken.sub}`);
+      } catch (error) {
+        console.error("Error durante la revocación de tokens:", error);
+        // Continuamos con la limpieza aunque falle la revocación
+      }
     }
-  } catch (error) {
-    console.error("Error durante la revocación de tokens:", error);
-    // No interrumpimos el flujo, seguimos con la limpieza de la cookie
-  }
 
-  // 2. Limpiar la cookie de sesión
-  try {
+    // 2. Limpiar la cookie de sesión
     res.clearCookie("__session", getCookieOptions());
-  } catch (error) {
-    console.error("Error limpiando cookie:", error);
-  }
 
-  // 3. Responder al cliente
-  res.status(200).json({
-    success: true,
-    message: "Sesión cerrada correctamente",
-  });
+    // 3. Responder al cliente
+    res.status(200).json({
+      success: true,
+      message: "Sesión cerrada correctamente",
+    });
+  } catch (error) {
+    console.error("Error en logout:", error);
+    // Aún así intentamos limpiar la cookie
+    res.clearCookie("__session", getCookieOptions());
+    res.status(200).json({
+      success: true,
+      message: "Sesión cerrada con advertencias",
+    });
+  }
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axiosInstance from "@/lib/axios";
 
 export default function SignUpForm() {
   const [title, setTitle] = useState("");
@@ -12,12 +13,13 @@ export default function SignUpForm() {
   const [healthcenter, setHealthcenter] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isloading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     setError(null);
 
     if (
@@ -35,43 +37,26 @@ export default function SignUpForm() {
       setError("El DNI debe contener solo números");
       return;
     }
-    setIsLoading(true);
 
     try {
       const registerData = {
-        title: title,
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        dni: dni,
-        address: address,
-        healthcenter: healthcenter,
+        title,
+        firstName,
+        lastName,
+        email,
+        dni,
+        address,
+        healthcenter,
       };
 
-      const registerRes = await fetch(
-        "http://localhost:3001/api/users/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(registerData),
-          credentials: "include",
-        }
-      );
-      if (!registerRes.ok) {
-        const errData = await registerRes.json();
-        setError(errData.error || "Error al crear la sesión");
-        return;
-      }
-
+      await axiosInstance.post("/api/users/register", registerData);
       setSuccessModal(true);
       setTimeout(() => {
         setSuccessModal(false);
         router.push("/admin_dashboard");
       }, 2000);
     } catch (error: any) {
-      setError(error.message);
+      setError(error.response?.data?.error || error.message);
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +64,7 @@ export default function SignUpForm() {
 
   return (
     <>
-      {isloading && (
+      {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-50 flex justify-center items-center">
           <div className="bg-white shadow-xl rounded-xl p-8 border border-gray-200">
             <div className="flex flex-col items-center justify-center space-y-4">

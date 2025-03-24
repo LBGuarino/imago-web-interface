@@ -1,0 +1,12 @@
+{
+  "SOPInstanceUID": "1.2.840.113681.172838154.1625123316.4520.71197",
+  "SeriesInstanceUID": "1.2.840.113681.172838154.1625123316.4520.71196",
+  "StudyInstanceUID": "2.16.840.1.113883.2.10.12.2110705520210701151956",
+  "PatientID": "21107055",
+  "PatientName": "ANDRES^MARIA GRISEL",
+  "StudyDate": "20210701",
+  "Modality": "MG",
+  "ImageLaterality": "L",
+  "ViewPosition": "CC",
+  "DoctorUID": "ctdLnhPVjVd0EDyOlUXs5Kx0p8g1"
+}

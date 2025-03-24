@@ -22,6 +22,7 @@ import { paginationMiddleware } from "../middlewares/pagination";
 import { validateDicomFiles, upload } from "../middlewares/validateDicomFile";
 import searchStudiesController from "../controllers/search_studies.controller";
 import { auditLog } from "../middlewares/auditLog";
+import { logSecurityEventController } from '../controllers/security.controller';
 
 const apiRouter = Router();
 
@@ -64,5 +65,8 @@ apiRouter.post("/verify-admin", verifyAdminController);
 apiRouter.get("/users", paginationMiddleware, getUsersController);
 apiRouter.post("/users/approve", approveUserController);
 apiRouter.delete("/users/:uid", deleteUserController);
+
+// Rutas de seguridad
+apiRouter.post("/security-logs", logSecurityEventController);
 
 export default apiRouter;

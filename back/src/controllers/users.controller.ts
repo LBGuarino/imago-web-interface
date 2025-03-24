@@ -4,19 +4,43 @@ import { approveUserByUid } from "../services/claims.service";
 import { UserRepository } from "../repositories/user.repository";
 import { HealthcenterRepository } from "../repositories/healthcenter.repository";
 import { generateRandomPassword } from "../utils/passwordGenerator";
+import { In } from "typeorm";
 
-export async function getUsersController(
-  req: Request,
-  res: Response
-): Promise<void> {
+export async function getUsersController(req: Request, res: Response): Promise<void> {
   try {
-    const users = await admin.auth().listUsers();
-    const formattedUsers = users.users.map((user) => ({
+    // 1. Obtener todos los usuarios de Firebase
+    const firebaseResult = await admin.auth().listUsers();
+    const firebaseUsers = firebaseResult.users.map((user) => ({
       uid: user.uid,
       email: user.email,
       claims: user.customClaims || {},
     }));
-    res.status(200).json({ users: formattedUsers });
+
+    // 2. Extraer los UIDs para consultar la base de datos local
+    const firebaseUids = firebaseUsers.map((user) => user.uid);
+
+    // 3. Obtener usuarios locales de PostgreSQL cuyos uid estén en Firebase
+    const localUsers = await UserRepository.find({
+      where: { uid: In(firebaseUids) },
+      relations: ["healthcenter"],
+    });
+
+    // 4. Crear un diccionario de usuarios locales usando el uid como clave
+    const localUsersDict = localUsers.reduce((acc: Record<string, any>, user) => {
+      acc[user.uid] = user;
+      return acc;
+    }, {});
+
+    // 5. Combinar los datos de Firebase con la información local
+    const mergedUsers = firebaseUsers.map((firebaseUser) => {
+      const localData = localUsersDict[firebaseUser.uid] || {};
+      return {
+        ...firebaseUser,
+        ...localData, // se sobrescriben o agregan propiedades locales
+      };
+    });
+
+    res.status(200).json({ users: mergedUsers });
   } catch (error) {
     console.error("Error al obtener lista de usuarios:", error);
     res.status(500).json({ error: "Error al obtener lista de usuarios" });

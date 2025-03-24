@@ -11,7 +11,7 @@ async function setOwnerAsAdmin(ownerUid: string) {
   }
 }
 
-setOwnerAsAdmin("Y9hbc0rIatbWYdFB0KalggMOSqj1")
+setOwnerAsAdmin("ctdLnhPVjVd0EDyOlUXs5Kx0p8g1")
   .then(() => process.exit(0))
   .catch((error) => {
     console.error("Error al asignar el usuario como admin:", error);

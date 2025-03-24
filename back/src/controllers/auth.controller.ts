@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import admin from "../lib/firebaseAdmin";
 import getLocalUserService from "../services/user.service";
+import rateLimit from 'express-rate-limit';
 
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 1000;
 
@@ -18,6 +19,12 @@ function getCookieOptions() {
   return options;
 }
 
+export const refreshSessionLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minuto
+  max: 10, // máximo 10 solicitudes por ventana
+  message: { error: 'Demasiadas solicitudes de refresh, por favor espere.' }
+});
+
 export default async function sessionLoginController(
   req: Request,
   res: Response,
@@ -30,6 +37,10 @@ export default async function sessionLoginController(
       return;
     }
 
+    // Verificar el token y obtener claims antes de crear la cookie
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const user = await admin.auth().getUser(decodedToken.uid);
+
     const sessionCookie = await admin
       .auth()
       .createSessionCookie(idToken, { expiresIn: SESSION_COOKIE_MAX_AGE });
@@ -37,12 +48,23 @@ export default async function sessionLoginController(
     res
       .cookie("__session", sessionCookie, getCookieOptions())
       .status(200)
-      .json({ success: true });
+      .json({ 
+        success: true,
+        user: {
+          email: user.email,
+          admin: decodedToken.admin || false,
+          approved: decodedToken.approved || false,
+          email_verified: user.emailVerified,
+          uid: user.uid,
+          displayName: user.displayName
+        }
+      });
   } catch (error) {
     console.error("Error al autenticar el usuario:", error);
-    res.status(500).json({ error: "Error al autenticar el usuario" });
+    res.status(401).json({ error: "Error al autenticar el usuario" });
   }
 }
+
 export async function refreshSessionController(
   req: Request,
   res: Response,
@@ -117,6 +139,7 @@ export async function getLocalUserController(
     res.status(401).json({ error: "Sesión inválida" });
   }
 }
+
 export async function checkAttributesController(
   req: Request,
   res: Response,
